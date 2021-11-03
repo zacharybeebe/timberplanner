@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sale.sale_name }}{% endblock %}
+
+{% block header2 %}{{ sale.sale_name }}{% endblock %}
+
+{% block sale_info %}
+{% autoescape false %}
+	{% if flash %}
+		<p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+	{% endif %}
+{% endautoescape %}
+<p>
+    <input type="button" class="form-group btn btn-secondary btn-sm" value="back to {{ sale.sale_name }}" id="back_to_sale" onclick="window.location.href = '{{ url_for('sale', sale_name=sale.sale_name) }}';" />
+</p>
+
+<form action="#" method="post" id="form_item">
+    <p style="color: rgba(84, 216, 226, .95);"><b id="lrm_flash">&emsp;</b></p>
+    <p><h6>LRM VOLUME PROPORTION</h6></p>
+        <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Current Volume:</label>
+        <label style="width: 200px; text-align: left; font-weight: bold;">{{ sale.mbf | int }} MBF</label>
+    </p>
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Target Volume:</label>
+        <input type="text" id="target_volume" name="target_volume" value="{{ target }}" style="width: 200px" />
+    </p>
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Conifer %:</label>
+        <select id="con_pct" name="con_pct" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 200px; display: inline; vertical-align: top;">
+        {% if con_pct %}
+            <option value="{{ con_pct }}">{{ con_pct }}</option>
+        {% endif %}
+        {% for i in range(100, 0, -5) %}
+            {% if i != con_pct %}
+                <option value="{{ i }}">{{ i }}</option>
+            {% endif %}
+        {% endfor %}
+        </select>
+    </p>
+    {% if units %}
+        <p>
+            {% set head = ['UNIT', 'CONIFER MBF', 'HARDWOOD MBF'] %}
+            {% for i in range(head|length) %}
+                {% if i == 0 %}
+                    <label style="width: 200px; text-align: left; font-weight: bold;">{{ head[i] }}</label>
+                {% else %}
+                    <label style="width: 200px; text-align: center; font-weight: bold;">{{ head[i] }}</label>
+                {% endif %}
+            {% endfor %}
+        </p>
+        {% for unit in units %}
+            <p>
+                {% for i in range(unit|length) %}
+                    {% if i == 0 %}
+                        <label style="width: 200px; text-align: left; font-weight: bold;">{{ unit[i] }}</label>
+                    {% else %}
+                        <label style="width: 200px; text-align: center; font-weight: bold;">{{ unit[i] }}</label>
+                    {% endif %}
+                {% endfor %}
+            </p>
+        {% endfor %}
+    {% endif %}
+    <p>
+        <input class="form-group btn btn-dark btn-sm" type="submit" id="lrm_vol" value="calculate" />
+    </p>
+
+    <p>&emsp;</p>
+</form>
+{% endblock %}

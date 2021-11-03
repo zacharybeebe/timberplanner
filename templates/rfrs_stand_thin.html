@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}RFRS {{ stand.stand }} Thinning{% endblock %}
+
+{% block header2 %}RFRS {{ stand.stand }} Thinning{% endblock %}
+
+
+{% block sale_info %}
+<script src="{{ url_for('static', filename='assets/dist/js/rfrs_stand_thin.js') }}"></script>
+
+<p>
+    <input type="button" class="form-group btn btn-secondary btn-sm" value="back to {{ stand.stand}}" id="back_to_stand" onclick="window.location.href = '{{ url_for('rfrs_stand', stand_ref = stand.ref_stand) }}';" />
+</p>
+{% if flash %}
+    {% autoescape false %}
+        <p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+    {% endautoescape %}
+{% endif %}
+
+{% if not report %}
+    {{ stand_metrics | safe }}
+    <p>&emsp;</p>
+{% endif %}
+
+{% if report %}
+    <p>
+        <input type="button" class="form-group btn btn-dark btn-sm" value="export report" id="export_report_but" onclick="export_report()" />
+	</p>
+
+    {{ report | safe }}
+    <p>&emsp;</p>
+{% endif %}
+
+<form class="form-inline" method="post" id="form_item" enctype="multipart/form-data">
+    <input type="text" value="no" id="export_report_pdf" name="export_report_pdf" style="display: none;" />
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Thinning Type</label>
+    </p>
+
+    <p>
+        <select id="thinning_type" name="thinning_type" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 400px;">
+            <option value="tpa">Trees per Acre</option>
+            <option value="ba">Basal Area</option>
+            <option value="rd">Relative Density</option>
+        </select>
+    </p>
+
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Target Density</label>
+        <input type="text" name="target_density" value="" style="width: 200px;" />
+    </p>
+
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Minimum DBH</label>
+        <input type="text" name="min_dbh_to_cut" value="0" style="width: 200px;" />
+    </p>
+
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Maximum DBH</label>
+        <input type="text" name="max_dbh_to_cut" value="999" style="width: 200px;" />
+    </p>
+
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Species to Cut</label>
+    </p>
+
+    <p>
+        <select id="species_to_cut" name="species_to_cut" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 400px;" multiple>
+        {% for spp in species %}
+            <option value="{{ spp }}">{{ spp }}</option>
+        {% endfor %}
+        </select>
+    </p>
+
+	<p>
+        <input type="button" class="form-group btn btn-dark btn-sm" value="submit thinning" id="submit_thin" onclick="document.getElementById('form_item').submit();" />
+	</p>
+</form>
+
+{% endblock %}

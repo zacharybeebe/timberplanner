@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sale.sale_name }}{% endblock %}
+
+{% block header2 %}{{ sale.sale_name }}{% endblock %}
+
+
+{% block sale_info %}
+<script src="{{ url_for('static', filename='assets/dist/js/sale.js') }}"></script>
+{% autoescape false %}
+	{% if flash_main != '' %}
+		<p style="color: rgba(84, 216, 226, .95);"><b>{{ flash_main }}</b></p>
+	{% endif %}
+
+	{% if flash_sale %}
+		<p style="color: rgba(84, 216, 226, .95);"><b>{{ flash_sale }}</b></p>
+	{% endif %}
+
+	{% if flash_unit %}
+		<p style="color: rgba(84, 216, 226, .95);"><b>{{ flash_unit }}</b></p>
+	{% endif %}
+{% endautoescape %}
+
+<form action="#" method="post" id="form_item">
+	<p>
+		<input type="button" class="form-group btn btn-dark btn-sm" value="silviculture scheduler" id="silviculture_scheduler" name="silviculture_scheduler" onclick="window.location.href = '{{ url_for('silviculture', sale_name=sale.sale_name) }}';" />
+		<input type="button" class="form-group btn btn-dark btn-sm" value="lrm volume calculator" id="lrm_volume_calculator" name="lrm_volume_calculator" onclick="window.location.href = '{{ url_for('lrm_vol', sale_name=sale.sale_name) }}';" />
+	</p>
+	<div class="container">
+		<div class="row">
+			<div class="col">
+			{% for key in sale.info %}
+				{% if sale.info[key]['editable'] %}
+					{% if sale_info[key]['err'] %}
+						{% set bg = 'background-color: #ff6961;'%}
+					{% else %}
+						{% set bg = 'background-color: auto;'%}
+					{% endif %}
+					<label style="width: 200px; text-align: left; font-weight: bold;">{{ sale.info[key]['head'] }}</label>
+					{% if key == 'forest' %}
+						<select name="S_{{ key }}" class="form-select form-select-sm" aria-label=".form-select-lg example" style="width: 200px; display: inline;">
+						<option value="{{ sale.info[key]['val'] }}">{{ sale.info[key]['val'] }}</option>
+						{% for i in const['FOREST_BLOCKS'] %}
+							{% if i != sale.info[key]['val'] %}
+								<option value="{{ i }}">{{ i }}</option>
+							{% endif %}
+						{% endfor %}
+						</select>
+					{% else %}
+						<input type="{{ sale.info[key]['type'] }}" name="S_{{ key }}" value="{{ sale.info[key]['val'] }}" style="width: 200px; {{ bg }}" />
+					{% endif %}
+					<br>
+				{% endif %}
+			{% endfor %}
+			</div>
+			<div class="col">
+				{% for key in sale.info %}
+				{% if not sale.info[key]['editable'] %}
+					<label style="width: 200px; text-align: left; font-weight: bold; padding: 1px 2px;">{{ sale.info[key]['head'] }}</label>
+					<label style="width: 200px; text-align: left; padding: 1px 2px;">{{ sale.info[key]['val'] }}</label>
+					<br>
+				{% endif %}
+			{% endfor %}
+			</div>
+		</div>
+		<p>&emsp;</p>
+		<div class="row">
+			<div class="table-responsive">
+				<h6>TRUST SUMMARY</h6>
+				<table class="table table-striped table-sm">
+					<thead>
+						<tr>
+						{% for head in ['TRUST', 'ACRES', 'MBF', 'TRUSTEE VALUE', 'DNR VALUE'] %}
+							<th style="width: auto;">{{ head }}</th>
+						{% endfor %}
+						</tr>
+					</thead>
+					<tbody>
+					{% for trust in sale.trust_summary %}
+						<tr>
+							{% if trust == 'TOTALS' %}
+								{% set fnt = 'font-weight: bold;' %}
+							{% else %}
+								{% set fnt = 'font-weight: auto;' %}
+							{% endif %}
+							<td style="{{ fnt }}">{{ trust }}</td>
+							{% for i in sale.trust_summary[trust] %}
+								{% if trust == 'TOTALS' %}
+									<td style="{{ fnt }}">{{ i }}</td>
+								{% else %}
+									<td style="{{ fnt }}">{{ i[0] }}&emsp;({{ i[1] }})</td>
+								{% endif %}
+							{% endfor %}
+						</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<p>&emsp;</p>
+	</div>
+
+	<div class="form-group">
+		<p>
+			<input type="button" class="form-group btn btn-info btn-sm" value="add unit" id="add_unit" name="add_unit" onclick="add_unit_row()" />
+			<input type="button" class="form-group btn btn-danger btn-sm" style="visibility: hidden;" value="delete unit" id="delete_unit" name="delete_unit" onclick="delete_submit()" />
+			<input type="text" style="visibility: hidden;" value="off" id="delete_on" name="delete_on" />
+		</p>
+
+		<div class="table-responsive">
+			<table class="table table-striped table-sm text-center">
+				<thead>
+					<tr>
+					{% for i in units_table['header'][0] %}
+						{% if i == 'checkbox' %}
+							<th class="td-parent" style="width: 15px;"><input class="form-check-input" type="checkbox" id="select_all" name="select_all" onclick="select_all_items(this)" /></th>
+						{% else %}
+							<th class="td-parent" colspan="2" style="width: 50px;">{{ i }}</th>
+						{% endif %}
+					{% endfor %}
+					</tr>
+					<tr>
+					{% for i in units_table['header'][1] %}
+						{% if i == 'checkbox' %}
+							<th style="width: 15px;"></th>
+						{% elif i == 'blank' %}
+							<th colspan="2"><small><label style="width: 70px;"></label></small></th>
+						{% else %}
+							<th><small><label style="width: 50px;">{{ i }}</label></small></th>
+						{% endif %}
+					{% endfor %}
+					</tr>
+				</thead>
+				<tbody id="sale_table_body">
+					{% for row in units_table['body'] %}
+						{% set cb = row['checkbox'] %}
+						{% set u_name = row['unit_name'] %}
+						{% set harv = row['harvest'] %}
+						{% set trusts = row['trusts'] %}
+						<tr>
+							<td><input id="{{ cb['name'] }}" name="{{ cb['name'] }}" class="form-check-input" type="checkbox" onclick="unhide_delete()" /></td>
+							{% if u_name['err'] %}
+								{% set bg = 'background-color: #ff6961;' %}
+							{% else %}
+								{% set bg = 'background-color: auto; '%}
+							{% endif %}
+							<td id="{{ u_name['name'] }}" colspan="2"><small><input type="text" name="{{ u_name['name'] }}" value="{{ u_name['val'] }}" style="width: 70px;{{ bg }}" /></small></td>
+
+							{% if harv['err'] %}
+								{% set bg = 'background-color: #ff6961;' %}
+							{% else %}
+								{% set bg = 'background-color: auto; '%}
+							{% endif %}
+							<td colspan="2"><small><input type="text" name="{{ harv['name'] }}" value="{{ harv['val'] }}" style="width: 70px; {{ bg }}" /></small></td>
+
+							{% for t in trusts %}
+								{% if t['err'] %}
+									{% set bg = 'background-color: #ff6961;' %}
+								{% else %}
+									{% if t['val'] > 0 %}
+										{% set bg = 'background-color: #C7F9F9;' %}
+									{% else %}
+										{% set bg = 'background-color: auto;' %}
+									{% endif %}
+								{% endif %}
+								<td><small><input type="text" name="{{ t['name'] }}" value="{{ t['val'] }}" style="width: 50px; {{ bg }};" /></small></td>
+							{% endfor %}
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+	<p><input class="form-group btn btn-dark btn-md" type="submit" id="submit_sale_edits" value="update" /></p>
+
+</form>
+
+
+{% endblock %}

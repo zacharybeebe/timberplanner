@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Swap Sales{% endblock %}
+
+{% block header2 %}Swap Sales{% endblock %}
+
+
+{% block swap_sales %}
+
+{% if flash %}
+    <p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+{% endif %}
+
+<form action="#" method="post" id="form_item">
+	<div class="form-group">
+		<div class="row">
+			<div class="span" style="clear-both;">
+				<span class="form-inline">
+					<p><b>SWAP</b></p>
+					<select id="sale_1" name="sale_1" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 400px; display: inline;">
+                        {% for sale in sales %}
+                            <option value="{{ sale[0] }}">{{ sale[0] }}: {{ sale[1] }}</option>
+                        {% endfor %}
+					</select>
+
+					<p><b>FOR</b></p>
+
+					<select id="sale_2" name="sale_2" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 400px; display: inline;">
+                        {% for sale in sales %}
+                            <option value="{{ sale[0] }}">{{ sale[0] }}: {{ sale[1] }}</option>
+                        {% endfor %}
+					</select>
+				</span>
+			</div>
+		</div>
+	</div>
+	<p><input class="form-group btn btn-dark btn-sm" type="submit" id="submit_swap" value="swap" /></p>
+</form>
+
+{% endblock %}

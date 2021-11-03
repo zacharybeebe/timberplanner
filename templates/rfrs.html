@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+
+{% block title %}RFRS{% endblock %}
+
+{% block header2 %}RFRS{% endblock %}
+
+
+{% block sale_info %}
+<script src="{{ url_for('static', filename='assets/dist/js/rfrs.js') }}"></script>
+<p><label style="font-weight: bold;">* Note that Stand Name's cannot contain spaces or special characters *</label></p>
+
+{% if flash %}
+    {% autoescape false %}
+        <p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+    {% endautoescape %}
+{% endif %}
+
+<form class="form-inline" method="post" id="form_item" enctype="multipart/form-data">
+	<p>
+        {% if rfrs_stands %}
+            <select id="stand_select" name="stand_select" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 175px; display: inline;" onchange="submit_pointer('data_from_previous_stand')">
+            <option value="default">Previous Stands</option>
+            {% for stand in rfrs_stands %}
+                <option value="{{ stand.ref_stand }}">{{ stand.stand }}</option>
+            {% endfor %}
+            </select>
+        {% endif %}
+        <input type="button" class="form-group btn btn-dark btn-sm" value="export blank inventory sheet" id="export_blank_sheet" name="export_blank_sheet" onclick="submit_pointer('export_blank_sheet_text')" />
+		<input type="button" class="form-group btn btn-dark btn-sm" value="add data from sheet" id="add_data_from_sheet" name="add_data_from_sheet" onclick="document.getElementById('data_file').click();" />
+        <input type="button" class="form-group btn btn-success btn-sm" value="add data from DNR Cruise sheet" id="add_data_from_dnr" name="add_data_from_dnr" onclick="document.getElementById('data_dnr').click();" />
+        <input type="button" class="form-group btn btn-dark btn-sm" value="create blank rows" id="create_blank_rows" name="create_blank_rows" onclick="blank_sheet()" />
+        <input type="button" class="form-group btn btn-info btn-sm" value="create fvs" id="create_fvs" onclick="window.location.href = '{{ url_for('rfrs_fvs') }}';" />
+        <input type="button" class="form-group btn btn-info btn-sm" value="export report from crazy fvs spreadsheet" id="export_fv" onclick="document.getElementById('data_fvs').click();" />
+		<input type="button" class="form-group btn btn-warning btn-sm" value="SUBMIT DATA" id="process_data" onclick="submit_pointer('process_data_text')" style="visibility: {{ process_data_vis }}" />
+		<input type="file" accept=".xlsx, .csv" id="data_file" name="data_file" style="display: none;" onchange="submit_pointer('data_from_sheet_text')" />
+        <input type="file" accept=".xlsx" id="data_dnr" name="data_dnr" style="display: none;" onchange="submit_pointer('data_from_sheet_dnr')" />
+        <input type="file" accept=".xls, .xlsx" id="data_fvs" name="data_fvs" style="display: none;" onchange="submit_pointer('data_from_sheet_fvs')" />
+        <input type="text" value="no" id="export_blank_sheet_text" name="export_blank_sheet_text" style="display: none;" />
+        <input type="text" value="no" id="data_from_previous_stand" name="data_from_previous_stand" style="display: none;" />
+		<input type="text" value="no" id="data_from_sheet_text" name="data_from_sheet_text" style="display: none;" />
+        <input type="text" value="no" id="data_from_sheet_dnr" name="data_from_sheet_dnr" style="display: none;" />
+        <input type="text" value="no" id="data_from_sheet_fvs" name="data_from_sheet_fvs" style="display: none;" />
+		<input type="text" value="no" id="process_data_text" name="process_data_text" style="display: none;" />
+	</p>
+
+    <div id="added_stands_div">
+        {% if added_stands %}
+            <p>
+                <label style="width: 200px; text-align: center; font-weight: bold;">Stand Name</label>
+                <label style="width: 200px; text-align: center; font-weight: bold;">Plot Factor</label>
+            </p>
+            {% for i in added_stands %}
+                <p>
+                    {% for j in range(2) %}
+                        {% if added_stands[i][j]['err'] %}
+                            {% set bg = 'background-color: #ff6961;'%}
+                        {% else %}
+                            {% set bg = 'background-color: auto;'%}
+                        {% endif %}
+                        <input type="text" name="{{ added_stands[i][j]['name_id'] }}" value="{{ added_stands[i][j]['val'] }}" style="width: 200px; {{ bg }}" />
+                    {% endfor %}
+                </p>
+            {% endfor %}
+        {% endif %}
+    </div>
+    <input type="button" class="form-group btn btn-info btn-sm" value="add stand" id="add_stand_button" name="add_stand_button" onclick="add_stand()" style="display: none;" />
+
+	<div class="table-responsive">
+		<table class="table table-striped table-sm">
+			<thead class="text-center">
+				<tr>
+                    <th style="width: 15x;">&emsp;</th>
+                    {% for i in const['RFRS_HEADER'] %}
+                        <th>{{ i }}</th>
+                    {% endfor %}
+				</tr>
+			</thead>
+
+			<tbody class="text-center" id="rfrs_table_body">
+                {% if table_body %}
+                    {% for row in range(table_body | length) %}
+                        <tr>
+                            <td style="width: 15px;"><small>{{ row + 1 }}</small></td>
+                            {% for col in range(table_body[row] | length) %}
+                                {% if table_body[row][col]['err'] %}
+                                    {% set bg = 'background-color: #ff6961;' %}
+                                {% else %}
+                                    {% set bg = 'background-color: auto; '%}
+                                {% endif %}
+                                <td><input type="text" name="{{ table_body[row][col]['name_id'] }}" value="{{ table_body[row][col]['val'] }}" style="{{ bg }}" /></td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                {% endif %}
+			</tbody>
+		</table>
+	</div>
+
+	<p><input type="button" class="form-group btn btn-dark btn-sm" value="add row" id="add_row" name="add_row" onclick="add_data_row()" /></p>
+</form>
+
+{% endblock %}

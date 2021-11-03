@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}RFRS {{ stand.stand }}{% endblock %}
+
+{% block header2 %}RFRS {{ stand.stand }}{% endblock %}
+
+
+{% block sale_info %}
+<script src="{{ url_for('static', filename='assets/dist/js/rfrs_stand.js') }}"></script>
+
+{% if flash %}
+    {% autoescape false %}
+        <p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+    {% endautoescape %}
+{% endif %}
+
+<form class="form-inline" method="post" id="form_item" enctype="multipart/form-data">
+	<p>
+		<input type="button" class="form-group btn btn-dark btn-sm" value="append data from sheet" id="append_data_from_sheet" name="append_data_from_sheet" onclick="document.getElementById('data_file').click();" />
+        <input type="button" class="form-group btn btn-dark btn-sm" value="view plot data" id="view_plot_data" onclick="submit_pointer('view_plot_data_text')" />
+        <input type="button" class="form-group btn btn-dark btn-sm" value="view report" id="view_report" onclick="submit_pointer('view_report_text')" />
+		<input type="button" class="form-group btn btn-dark btn-sm" value="pdf report" id="pdf_report" onclick="submit_pointer('pdf_report_text')" />
+        <input type="button" class="form-group btn btn-info btn-sm" value="thin stand" id="thin_stand" onclick="window.location.href = '{{ url_for('rfrs_stand_thin', stand_ref=stand.ref_stand) }}';" />
+        <input type="button" class="form-group btn btn-danger btn-sm" value="delete stand" id="delete_stand" onclick="submit_pointer('delete_stand_text')" />
+		<input type="file" accept=".xlsx, .csv" id="data_file" name="data_file" style="display: none;" onchange="submit_pointer('data_from_sheet_text')" />
+        <input type="text" value="no" id="data_from_sheet_text" name="data_from_sheet_text" style="display: none;" />
+        <input type="text" value="no" id="view_plot_data_text" name="view_plot_data_text" style="display: none;" />
+        <input type="text" value="no" id="view_report_text" name="view_report_text" style="display: none;" />
+		<input type="text" value="no" id="pdf_report_text" name="pdf_report_text" style="display: none;" />
+        <input type="text" value="no" id="delete_stand_text" name="delete_stand_text" style="display: none;" />
+	</p>
+
+    {% if report %}
+        {{ report | safe }}
+    {% endif %}
+
+    {% if table_body %}
+        <div class="table-responsive padding-0">
+            <table class="table table-striped table-sm">
+                <thead class="text-center">
+                    <tr>
+                        <th style="width: 15x;">&emsp;</th>
+                        {% for i in const['RFRS_HEADER'] %}
+                            <th>{{ i }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tbody class="text-center" id="rfrs_table_body">
+                    {% for row in range(table_body | length) %}
+                        <tr>
+                            <td style="width: 15px;"><small>{{ row + 1 }}</small></td>
+                            {% for col in range(table_body[row] | length) %}
+                                {% if table_body[row][col]['err'] %}
+                                    {% set bg = 'background-color: #ff6961;' %}
+                                {% else %}
+                                    {% set bg = 'background-color: auto; '%}
+                                {% endif %}
+                                <td><input type="text" name="{{ table_body[row][col]['name_id'] }}" value="{{ table_body[row][col]['val'] }}" onchange="unhide_update()" style="{{ bg }}" /></td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <p>
+            <input type="button" class="form-group btn btn-dark btn-sm" value="add row" id="add_row" name="add_row" onclick="add_data_row()" />
+            <input type="button" class="form-group btn btn-info btn-sm" value="update stand" id="update_stand" onclick="submit_pointer('update_stand_text')" style="visibility: hidden;" />
+            <input type="text" value="no" id="update_stand_text" name="update_stand_text" style="display: none;" />
+        </p>
+    {% endif %}
+</form>
+
+{% endblock %}

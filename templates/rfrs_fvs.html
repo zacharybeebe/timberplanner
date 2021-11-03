@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}RFRS FVS{% endblock %}
+
+{% block header2 %}RFRS FVS{% endblock %}
+
+
+{% block sale_info %}
+<script src="{{ url_for('static', filename='assets/dist/js/rfrs_fvs.js') }}"></script>
+
+{% if flash %}
+    {% autoescape false %}
+        <p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+    {% endautoescape %}
+{% endif %}
+
+<form class="form-inline" method="post" id="form_item" enctype="multipart/form-data">
+    <p>
+        <label style="width: 200px; text-align: left; font-weight: bold;">Database to Create</label>
+    </p>
+
+    {% if rfrs_stands %}
+        <p>
+            <select size="3" id="dbs_to_create" name="dbs_to_create" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 400px;" multiple>
+            {% for db in ['ACCESS', 'EXCEL', 'SQLITE'] %}
+                <option value="{{ db }}">{{ db }}</option>
+            {% endfor %}
+            </select>
+        </p>
+        <p>
+            <label style="width: 200px; text-align: left; font-weight: bold;">Stands to Add to Database</label>
+        </p>
+        <p>
+            <select id="stands_to_add" name="stands_to_add" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 400px;" multiple onchange="stand_select(this)">
+            {% for stand in rfrs_stands %}
+                <option value="{{ stand.stand }}">{{ stand.stand }}</option>
+            {% endfor %}
+            </select>
+        </p>
+    {% else %}
+        <label style="text-align: left; font-weight: bold;">No RFRS Stands in Database, please create a stand</label>
+    {% endif %}
+
+    {% if stand_info %}
+        {% set vis = 'visibile' %}
+        {% for stand in stand_info %}
+            {% set tables = stand_info[stand] %}
+            <p>
+                <label style="width: 200px; text-align: left; font-weight: bold;">Stand</label>
+                {% for i in tables[0] %}
+                   <label style="width: 100px; text-align: center; font-weight: bold;">{{ i }}</label>
+                {% endfor %}
+            </p>
+            <p>
+                <label style="width: 200px; text-align: left; font-weight: bold;">{{ stand }}</label>
+                {% for i in tables[1] %}
+                    {% if i['err'] %}
+                        {% set bg = 'background-color: #ff6961;'%}
+                    {% else %}
+                        {% set bg = 'background-color: auto;' %}
+                    {% endif %}
+                    <input type="text" id="{{ i['name_id'] }}" name="{{ i['name_id'] }}" value="{{ i['val'] }}" style="width: 100px; {{ bg }}"/>
+                {% endfor %}
+            </p>
+            <p>&emsp;</p>
+        {% endfor %}
+    {% else %}
+        {% set vis = 'hidden' %}
+    {% endif %}
+
+
+</form>
+<p><input type="button" class="form-group btn btn-dark btn-sm" value="create fvs" id="create_fvs" name="create_fvs" onclick="submit()" style="visibility: {{ vis }};" /></p>
+{% endblock %}

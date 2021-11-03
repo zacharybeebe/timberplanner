@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	{% if fy == 'all' %}
+		All Sales
+	{% else %}
+		{{ fy }} Sales
+	{% endif %}
+{% endblock %}
+
+{% block header2 %}
+	{% if fy == 'all' %}
+		All Sales
+	{% else %}
+		{{ fy }} Sales
+	{% endif %}
+{% endblock %}
+
+
+{% block sales %}
+<script type="text/javascript" src="{{ url_for('static', filename='assets/dist/js/sales.js') }}"></script>
+
+{% if flash %}
+	<p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+{% endif %}
+
+<form class="form-inline" method="post" id="form_filter">
+	<div class="form-group">
+		<div class="row">
+			<div class="span" style="clear-both;">
+				<span class="form-inline">
+					<p>
+						<input type="button" class="form-group btn btn-danger btn-sm" style="visibility: hidden;" value="delete sale" id="delete_sale" name="delete_sale" onclick="delete_alert()" />
+						<input type="button" class="form-group btn btn-dark btn-sm" style="visibility: hidden;" value="swap sales" id="swap_sale" name="swap_sale" onclick="submit()" />
+						<input type="text" style="visibility: hidden;" value="off" id="delete_on" name="delete_on" />
+						<input type="text" style="visibility: hidden;" value="off" id="swap_on" name="swap_on" />
+					</p>
+				</span>
+			</div>
+		</div>
+	</div>
+
+	<div class="form-group">
+		<div class="row">
+			<div class="span" style="clear-both;">
+                {% for key in filters %}
+					{% set attr = filters[key]['attr'] %}
+					{% set val = filters[key]['val'] %}
+					{% set rngs = filters[key]['rngs'] %}
+
+					<select id="{{ attr }}" name="{{ attr }}" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 250px; display: inline;" onchange="submit()">
+					{% if filters[key]['val'] != 'all' %}
+						<option value="{{ val }}">{{ filters[key]['show_val'] }}</option>
+					{% endif %}
+					<option value="all">{{ key }}</option>
+					{% for i in range(rngs | length) %}
+						{% if rngs[i] != val %}
+							<option value="{{ rngs[i] }}">{{ filters[key]['show_rngs'][i] }}</option>
+						{% endif %}
+					{% endfor %}
+					</select>
+                {% endfor %}
+			</div>
+		</div>
+	</div>
+
+	<small>{{ sales_table | length  - 1 }} Sales</small>
+	<div class="form-group">
+		<div class="table-responsive">
+			<table class="table table-striped table-sm">
+				<thead>
+					<tr>
+						{% for head in sales_table[0] %}
+							{% if head == 'checkbox' %}
+								<th style="width: 15px;"><input class="form-check-input" type="checkbox" id="select_all" name="select_all" onclick="select_all_items(this)" /></th>
+							{% else %}
+								<th style="width: auto;">{{ head }}</th>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				</thead>
+				<tbody>
+					{% for sale_row in (sales_table)[1:] %}
+						{% set sale_name = sale_row[1] %}
+						<tr style="cursor: pointer;" onclick="row_onclick(event, '{{ url_for('sale', sale_name=sale_name) }}')">
+						{% for data in sale_row %}
+							{% if data == 'checkbox' %}
+								<td><input id="cbx_{{ sale_name }}" name="cbx_{{ sale_name }}" class="form-check-input" type="checkbox" onclick="unhide_delete()" /></td>
+							{% else %}
+								<td>{{ data }}</td>
+							{% endif %}
+						{% endfor %}
+						</tr>
+					{% endfor %}
+
+					<tr>
+						{% for i in range(totals | length) %}
+							{% if i == 0 %}
+								<td class="text-center" colspan="5"><b>{{ totals[i] }}</b></td>
+							{% else %}
+								<td><b>{{ totals[i] }}</b></td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		<p>&emsp;</p>
+		<div class="table-responsive">
+			<h6>TRUST SUMMARY</h6>
+			<table class="table table-striped table-sm">
+				<thead>
+					<tr>
+					{% for head in ['TRUST', 'ACRES', 'MBF', 'TRUSTEE VALUE', 'DNR VALUE'] %}
+						<th style="width: auto;">{{ head }}</th>
+					{% endfor %}
+					</tr>
+				</thead>
+				<tbody>
+				{% for trust in trust_summary %}
+					<tr>
+						{% if trust == 'TOTALS' %}
+							{% set fnt = 'font-weight: bold;' %}
+						{% else %}
+							{% set fnt = 'font-weight: auto;' %}
+						{% endif %}
+						<td style="{{ fnt }}">{{ trust }}</td>
+						{% for i in trust_summary[trust] %}
+							{% if trust == 'TOTALS' %}
+								<td style="{{ fnt }}">{{ i }}</td>
+							{% else %}
+								<td style="{{ fnt }}">{{ i[0] }}&emsp;({{ i[1] }})</td>
+							{% endif %}
+						{% endfor %}
+					</tr>
+				{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</form>
+<p>&emsp;</p>
+
+{% endblock %}
+

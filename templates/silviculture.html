@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sale.sale_name }} Silviculture{% endblock %}
+
+{% block header2 %}{{ sale.sale_name }} Silviculture{% endblock %}
+
+
+{% block sale_info %}
+<script src="{{ url_for('static', filename='assets/dist/js/silviculture.js') }}"></script>
+{% autoescape false %}
+	{% if flash %}
+		<p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+	{% endif %}
+{% endautoescape %}
+<p>
+    <input type="button" class="form-group btn btn-secondary btn-sm" value="back to {{ sale.sale_name }}" id="back_to_sale" onclick="window.location.href = '{{ url_for('sale', sale_name=sale.sale_name) }}';" />
+</p>
+
+<form action="#" method="post" id="form_item">
+	<input type="text" value="no" id="new_report_text" name="new_report_text" style="display: none;" />
+	<input type="text" value="no" id="rerun_report_text" name="rerun_report_text" style="display: none;" />
+
+	{% set silv_bool, silv_options = silv %}
+	{% if silv_bool %}
+		<p>
+			<input type="button" class="form-group btn btn-warning btn-sm" value="generate new report" id="new_report" onclick="submit_pointer('new_report_text')" />
+			<small>&emsp;Generating A New Report will not change Current Report until Processed</small>
+		</p>
+		<p>
+			<label style="width: 200px; text-align: left; font-weight: bold;">Fiscal Year</label>
+			<label style="width: 200px; text-align: left; font-weight: bold;">{{ sale.fy }}</label>
+		</p>
+		<p>
+			<label style="width: 200px; text-align: left; font-weight: bold;">Years of Contract</label>
+			<label style="width: 200px; text-align: left; font-weight: bold;">{{ sale.silv_report.contract_years }}</label>
+		</p>
+
+		{% for key in silv_options %}
+			<div class="border border-dark p-3" id="div_{{ key }}">
+				{% set key_list = key.split('_') %}
+				<label style="width: 200px; text-align: left; font-weight: bold;">{{ key_list | join(' ') | upper }}</label><br>
+				{% for sub in silv_options[key] %}
+					{% set sub_list = sub.split('|') %}
+					{% set show = sub_list[-1].replace('_', ' ').upper() %}
+					{% set val = silv_options[key][sub] %}
+					<label style="width: 125px; text-align: left; font-weight: bold;"><small>{{ show }}:</small></label>
+					<label style="width: 500px; text-align: left; font-weight: bold;"><small>{{ val }}</small></label>
+					<br>
+				{% endfor %}
+				<br>
+			</div>
+			<p>&emsp;</p>
+		{% endfor %}
+
+
+	{% else %}
+		<p>
+			<label style="width: 200px; text-align: left; font-weight: bold;">Fiscal Year</label>
+			<label style="width: 200px; text-align: left; font-weight: bold;">{{ sale.fy }}</label>
+		</p>
+		<p>
+			<label style="width: 200px; text-align: left; font-weight: bold;">Years of Contract</label>
+			<input type="text" name="contract_years" value="{{ contract_years }}" style="width: 200px;" />
+			<input type="button" class="form-group btn btn-warning btn-sm" value="rerun report" id="rerun_report" onclick="submit_pointer('rerun_report_text')" style="visibility: {{ process_data_vis }}" />
+		</p>
+
+		{% for key in silv_options %}
+			<div class="border border-dark p-3" id="div_{{ key }}">
+				{% if key not in ['contract_expires', 'site_prep', 'regen'] %}
+					<p><small onclick="delete_activity('div_{{ key }}')" style="cursor: pointer; background-color: #ff6961;">&nbsp;remove activity&nbsp;</small></p>
+				{% endif %}
+
+				{% if key in const['SILV_IGNORE_KEYS'] %}
+					<input type="text" value="no" id="{{ key }}=ignore" name="{{ key }}=ignore" style="display: none;" />
+				{% endif %}
+
+				{% set bools = {'add_but': False} %}
+				{% set key_list = key.split('_') %}
+				<label style="width: 200px; text-align: left; font-weight: bold;">{{ key_list | join(' ') | upper }}</label><br>
+				{% for sub in silv_options[key] %}
+					{% set sub_list = sub.split('|') %}
+					{% set elem = sub_list[0] %}
+					{% set show = sub_list[-1].replace('_', ' ').upper() %}
+					{% set val = silv_options[key][sub] %}
+					<label style="width: 125px; text-align: left; font-weight: bold;"><small>{{ show }}:</small></label>
+
+					{% set nmid = '{}={}'.format(key, sub) %}
+					{% if elem == 'inpt' %}
+						<input type="text" value="{{ val }}" id="{{ nmid }}" name="{{ nmid }}" style="width: 300px;" />
+					{% elif elem == 'sel' %}
+						<select id="{{ nmid }}" name="{{ nmid }}" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 300px; display: inline; vertical-align: top;">
+						{% for i in val %}
+							<option value="{{ i }}">{{ i }}</option>
+						{% endfor %}
+						</select>
+					{% elif elem == 'mul' %}
+						<select size="{{ [val|length, 3]|min }}" multiple id="{{ nmid }}" name="{{ nmid }}" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 300px; display: inline; vertical-align: top;">
+						{% for i in range(val|length) %}
+							{% if i == 0 %}
+								<option selected value="{{ val[i] }}">{{ val[i] }}</option>
+							{% elif show[:5] == 'UNITS' %}
+								<option selected value="{{ val[i] }}">{{ val[i] }}</option>
+							{% else %}
+								<option value="{{ val[i] }}">{{ val[i] }}</option>
+							{% endif %}
+						{% endfor %}
+						</select>
+					{% elif elem == 'addsel' %}
+						{% if bools.update({'add_but': True}) %}{% endif %}
+						<select id="{{ nmid }}" name="{{ nmid }}" class="form-select form-select-sm mb-3" aria-label=".form-select-lg example" style="width: 300px; display: inline; vertical-align: top;">
+						{% for i in val %}
+							<option value="{{ i }}">{{ i }}</option>
+						{% endfor %}
+						</select>
+
+					{% else %}
+						<label style="width: 125px; text-align: left; font-weight: bold;"><small>{{ val }}</small></label>
+					{% endif %}
+				<br>
+				{% endfor %}
+
+				{% if bools.add_but %}
+					<div id="add_species_{{ key }}">&emsp;</div>
+					<small onclick="add_species('add_species_{{ key }}', {{ sale_units|safe }})" style="cursor: pointer; background-color: #5bc0de;">&nbsp;add species&nbsp;</small>
+				{% endif %}
+			</div>
+			<p>&emsp;</p>
+		{% endfor %}
+
+		<p><input class="form-group btn btn-dark btn-md" type="submit" id="update_silviculture_report" value="generate silviculture report" /></p>
+	{% endif %}
+
+</form>
+
+{% endblock %}
+
+
+
