@@ -79,9 +79,13 @@ from models.silviculture import Silviculture
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 
-@app.route('/')
+@app.route('/', methods=['POST', 'GET'])
 def home():
-    return redirect(url_for('sales', fy='all'))
+    if request.method == 'POST':
+        if request.form['editable'] == 'yes':
+            app.config['READONLY'] = False
+        return redirect(url_for('sales', fy='all'))
+    return render_template('home.html', const=app.config['CONSTANTS'])
 
 
 @app.route('/sales_<fy>', methods=['POST', 'GET'])
@@ -454,16 +458,17 @@ def exit_and_save():
 def shutdown():
     app.config['ORM'].conn.close()
     print(f"\nLOCAL DATABASE CONNECTION IS CLOSED")
-    if not app.config['DEBUG']:
+    if not app.config['DEBUG'] and not app.config['READONLY']:
         copy_local_db_to_main(app.config['DB'], MAIN_DB)
         print(f"LOCAL DATABASE COPIED UP TO MAIN DATABASE")
     print('EXITING...')
 
 
 if __name__ == '__main__':
-    debug = True
+    debug = False
 
     app.config['DEBUG'] = debug
+    app.config['READONLY'] = True
 
     if debug:
         # TESTING

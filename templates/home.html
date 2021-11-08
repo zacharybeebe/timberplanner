@@ -1,0 +1,20 @@
+{% extends 'base_login.html' %}
+
+
+{% block title %}Home{% endblock %}
+
+
+{% block info %}Home{% endblock %}
+
+{% block home %}
+<script src="{{ url_for('static', filename='assets/dist/js/home.js') }}"></script>
+<p>
+	<input type="button" class="form-group btn btn-light btn-lg" value="Open Read Only" onclick="submit_pointer('read_only')" />
+	&emsp;&emsp;&emsp;
+	<input type="button" class="form-group btn btn-info btn-lg" value="Open Editable" onclick="submit_pointer('editable')" style="visibility: {{ process_data_vis }}" />
+	<form class="form-inline" method="post" id="form_item" enctype="multipart/form-data">
+		<input type="text" value="no" id="read_only" name="read_only" style="display: none;" />
+		<input type="text" value="no" id="editable" name="editable" style="display: none;" />
+	</form>
+</p>
+{% endblock %}
