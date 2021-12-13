@@ -82,6 +82,17 @@ from models.presale import Presale
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
 
+@app.route('/readonly', methods=['POST'])
+def readonly():
+    if request.form['readonly'] == 'true':
+        app.config['READONLY'] = True
+        app.config['CONSTANTS']['READONLY'] = True
+    else:
+        app.config['READONLY'] = False
+        app.config['CONSTANTS']['READONLY'] = False
+    return 'success'
+
+
 @app.route('/', methods=['POST', 'GET'])
 def home():
     if request.method == 'POST':
@@ -99,9 +110,6 @@ def sales(fy):
         fy = int(fy)
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         if request.form['delete_on'] == 'on':
             app.config['TIMBERSALES'], deleted_sales, app.config['CONSTANTS']['FISCAL_YEARS'] = delete_sales(app.config['ORM'], app.config['TIMBERSALES'], request.form)
             flash = f"""{deleted_sales} and units deleted successfully"""
@@ -134,9 +142,6 @@ def sale(sale_name):
     units_table = get_units_table_from_sale(sale)
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         if request.form['delete_on'] == 'on':
             flash_main = delete_units(app.config['ORM'], sale, request.form)
         else:
@@ -189,9 +194,6 @@ def swap_sales():
     flash = None
     sales = app.config['TIMBERSALES']
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         sale1_name, sale2_name = request.form['sale_1'], request.form['sale_2']
         if sale1_name == sale2_name:
             flash = f"""Cannot swap {sale1_name} for {sale2_name} because they are the same sale"""
@@ -213,9 +215,6 @@ def create_sale():
     units_table = {'header': get_units_table_header()}
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         if request.files['shp_file'].filename != '':
             files = request.files.getlist('shp_file')
             file_dict = {file.filename[-3:]: file for file in files}
@@ -265,9 +264,6 @@ def rfrs(flash_code):
     added_stands = None
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         if request.form['data_from_sheet_text'] == 'yes' or request.form['data_from_sheet_dnr'] == 'yes':
             if request.form['data_from_sheet_text'] == 'yes':
                 file = request.files['data_file']
@@ -326,9 +322,6 @@ def rfrs_stand(stand_ref):
     report = None
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         if request.form['data_from_sheet_text'] == 'yes':
             error, flash = append_stand_from_sheet(request.files['data_file'], stand)
             if not error:
@@ -391,9 +384,6 @@ def rfrs_stand_thin(stand_ref):
     report = None
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         if request.form['export_report_pdf'] == 'yes':
             directory = check_make_directory(app.config['BASE_DIR'])
             thin = app.config['REPORTS']['thin']
@@ -415,9 +405,6 @@ def rfrs_fvs():
     stand_info = None
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         dbs = request.form.getlist('dbs_to_create')
         if not dbs:
             flash = 'Please Select at least one Database Type'
@@ -445,9 +432,6 @@ def silviculture(sale_name):
         silv = [False, get_silviculture_options(sale)]
 
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         if request.form['rerun_report_text'] == 'yes':
             contract_years = int(request.form['contract_years'])
             silv = [False, get_silviculture_options(sale, contract_years=contract_years)]
@@ -486,9 +470,6 @@ def lrm_vol(sale_name):
     con_pct = None
     units = None
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         con_pct = int(request.form['con_pct'])
         error, target, units, flash = is_err_calculate_lrm_vol(sale, request.form['target_volume'], con_pct)
 
@@ -501,9 +482,6 @@ def presales(sale_name):
     flash = None
     sale = {s.sale_name: s for s in app.config['TIMBERSALES']}[sale_name]
     if request.method == 'POST':
-        if 'readonly' in request.form:
-            change_readonly(app, request.form['readonly'])
-            return redirect(request.url)
         update_presales(sale.presales, request.form)
         flash = 'Activities Updated Successfully'
 
@@ -535,6 +513,7 @@ if __name__ == '__main__':
 
     app.config['DEBUG'] = debug
     app.config['READONLY'] = True
+    app.jinja_env.globals.update(READONLY=app.config['READONLY'])
 
     if debug:
         # TESTING
