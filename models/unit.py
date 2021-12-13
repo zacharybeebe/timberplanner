@@ -32,7 +32,6 @@ class Unit(ORM):
         self.harvest = harvest
         self.trusts = trusts
 
-        self.db = None
         self.acres = self.calc_acres()
         self.mbf = self.calc_mbf()
         self.mbf_ac = self.calc_mbf_ac()

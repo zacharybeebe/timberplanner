@@ -97,9 +97,11 @@ class Sale(ORM):
         self.set_units_and_trusts()
 
     def set_silviculture(self):
+        conn, cur = self.connect_db()
         sql = f"""SELECT * FROM silvicultures WHERE sale_ref = ?"""
-        self.cur.execute(sql, [self.ref])
-        silv_args = self.cur.fetchone()
+        cur.execute(sql, [self.ref])
+        silv_args = cur.fetchone()
+        conn.close()
         if silv_args:
             args = [self.db]
             for i in silv_args:
@@ -110,10 +112,11 @@ class Sale(ORM):
             self.silv_report = Silviculture(*args)
 
     def set_units_and_trusts(self):
+        conn, cur = self.connect_db()
         sql = f"""SELECT * FROM units WHERE sale_ref = ?"""
-        self.cur.execute(sql, [self.ref])
-        unit_data = self.cur.fetchall()
-
+        cur.execute(sql, [self.ref])
+        unit_data = cur.fetchall()
+        conn.close()
         temp_units = {}
         self.trusts = deepcopy(TRUSTS_DICT)
         acres, mbf = 0, 0
@@ -145,9 +148,11 @@ class Sale(ORM):
         self.trust_summary = self._get_trust_summary()
 
     def set_presales(self):
+        conn, cur = self.connect_db()
         sql = f"""SELECT * FROM presales WHERE sale_ref = ?"""
-        self.cur.execute(sql, [self.ref])
-        args = [self.db] + [i for i in self.cur.fetchone()]
+        cur.execute(sql, [self.ref])
+        args = [self.db] + [i for i in cur.fetchone()]
+        conn.close()
         self.presales = Presale(*args)
 
     def _get_trust_summary(self):

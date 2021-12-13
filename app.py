@@ -130,6 +130,9 @@ def sale(sale_name):
     sale_name_change_check = (sale_name, )
 
     sale = {s.sale_name: s for s in app.config['TIMBERSALES']}[sale_name]
+    print(f'sale db  = {sale.db}')
+    for u in sale.units:
+        print(f'u{u} db = {sale.units[u].db}')
     sale_info = deepcopy(sale.info)
     units_table = get_units_table_from_sale(sale)
 
@@ -522,7 +525,7 @@ def exit_and_save():
 
 
 def shutdown():
-    app.config['ORM'].conn.close()
+    #app.config['ORM'].conn.close()
     print(f"\nLOCAL DATABASE CONNECTION IS CLOSED")
     if not app.config['DEBUG'] and not app.config['READONLY']:
         if MAIN_DB is not None:

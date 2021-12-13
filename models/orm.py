@@ -14,8 +14,8 @@ class ORM(object):
     def __init__(self, db, ref=None):
         self.db = db
         self.ref = ref
-        self.conn = connect(self.db, check_same_thread=False)
-        self.cur = self.conn.cursor()
+        # self.conn = connect(self.db, check_same_thread=False)
+        # self.cur = self.conn.cursor()
 
     def __getitem__(self, item):
         return self.__dict__[item]
@@ -23,32 +23,43 @@ class ORM(object):
     def __setitem__(self, key, value):
         setattr(self, key, value)
 
+    def connect_db(self):
+        conn = connect(self.db)
+        cur = conn.cursor()
+        return conn, cur
+
     def sale_name_exists(self, old_sale_name, sale_name):
         if old_sale_name == sale_name:
             return False
         else:
+            conn, cur = self.connect_db()
             sql = f"""SELECT sale_name FROM sales WHERE sale_name = ?"""
-            self.cur.execute(sql, [sale_name])
-            x = self.cur.fetchone()
+            cur.execute(sql, [sale_name])
+            x = cur.fetchone()
+            conn.close()
             if x is None:
                 return False
             else:
                 return True
 
     def get_last_primary(self, cls):
+        conn, cur = self.connect_db()
         table = f'{cls.__name__.lower()}s'
         primary_key = cls.primary_key
         sql = f"""SELECT {primary_key} FROM {table}"""
-        self.cur.execute(sql)
-        data = self.cur.fetchall()
+        cur.execute(sql)
+        data = cur.fetchall()
+        conn.close()
         return data[-1][0]
 
     def select(self, cls: object, primary_value: object) -> object:
+        conn, cur = self.connect_db()
         table = f'{cls.__name__.lower()}s'
         primary_key = cls.primary_key
         sql = f"""SELECT * FROM {table} WHERE {primary_key} = ?"""
-        self.cur.execute(sql, [primary_value])
-        data = self.cur.fetchone()
+        cur.execute(sql, [primary_value])
+        data = cur.fetchone()
+        conn.close()
         args = [self.db]
         for i in data:
             if isinstance(i, bytes):
@@ -59,10 +70,12 @@ class ORM(object):
         return return_class
 
     def select_all_sales(self):
+        conn, cur = self.connect_db()
         cls = {i.__name__: i for i in ORM.__subclasses__()}['Sale']
         sql = f"""SELECT * FROM sales"""
-        self.cur.execute(sql)
-        sales = self.cur.fetchall()
+        cur.execute(sql)
+        sales = cur.fetchall()
+        conn.close()
         master = []
         for s in sales:
             args = [self.db]
@@ -80,19 +93,20 @@ class ORM(object):
         return master
 
     def select_all_rfrs_stands(self):
+        conn, cur = self.connect_db()
         stand_cls = {i.__name__: i for i in ORM.__subclasses__()}['RfrsStand']
         table_cls = {i.__name__: i for i in ORM.__subclasses__()}['RfrsTable']
         sql = f"""SELECT * FROM rfrsstands"""
-        self.cur.execute(sql)
-        stands = self.cur.fetchall()
+        cur.execute(sql)
+        stands = cur.fetchall()
 
         master = []
         for stand_args in stands:
             args = [self.db] + list(stand_args)
             stand = stand_cls(*args)
             sql = f"""SELECT * FROM rfrstables WHERE ref_stand = ?"""
-            self.cur.execute(sql, [stand.ref_stand])
-            tables = self.cur.fetchall()
+            cur.execute(sql, [stand.ref_stand])
+            tables = cur.fetchall()
             stand.table_rows = []
             stand.table_data = []
             for table_args in tables:
@@ -102,18 +116,22 @@ class ORM(object):
                 stand.table_rows.append(table)
                 stand.table_data.append(table.table_row)
             master.append(stand)
+        conn.close()
         master = sorted([i for i in master], key=lambda x: x.ref, reverse=True)
         return master
 
     def delete(self, cls, primary_value):
+        conn, cur = self.connect_db()
         table = f'{cls.__name__.lower()}s'
         primary_key = cls.primary_key
 
         sql = f"""DELETE FROM {table} WHERE {primary_key} = ?"""
-        self.cur.execute(sql, [primary_value])
-        self.conn.commit()
+        cur.execute(sql, [primary_value])
+        conn.commit()
+        conn.close()
 
     def insert_self(self):
+        conn, cur = self.connect_db()
         table = f'{self.__class__.__name__.lower()}s'
         args = [i for i in self.args if i not in self.exclude]
         d = self.__dict__
@@ -125,10 +143,12 @@ class ORM(object):
                 else:
                     vals.append(d[key])
         sql = f"""INSERT into {table} ({', '.join(args)}) VALUES ({', '.join(['?' for _ in vals])})"""
-        self.cur.execute(sql, vals)
-        self.conn.commit()
+        cur.execute(sql, vals)
+        conn.commit()
+        conn.close()
 
     def update_self(self):
+        conn, cur = self.connect_db()
         table = f'{self.__class__.__name__.lower()}s'
         primary_key = self.primary_key
         args = [i for i in self.args if i not in self.exclude]
@@ -144,8 +164,9 @@ class ORM(object):
                   SET ({', '.join(args)}) = ({', '.join(['?' for _ in vals])})
                   WHERE {primary_key} = ?;"""
         vals.append(self[primary_key])
-        self.cur.execute(sql, vals)
-        self.conn.commit()
+        cur.execute(sql, vals)
+        conn.commit()
+        conn.close()
 
     @staticmethod
     def create_tables(db):
@@ -165,6 +186,7 @@ class ORM(object):
             print(sql)
             cur.execute(sql)
         conn.commit()
+        conn.close()
 
     @staticmethod
     def create_table(db, cls):
@@ -181,6 +203,7 @@ class ORM(object):
         print(sql)
         cur.execute(sql)
         conn.commit()
+        conn.close()
 
 
 

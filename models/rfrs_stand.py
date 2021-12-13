@@ -39,14 +39,16 @@ class RfrsStand(ORM):
         self.table_data = None
 
     def select_rfrs_stand(self, stand_name):
+        conn, cur = self.connect_db()
         sql = f"""SELECT * FROM {f'{RfrsStand.__name__.lower()}s'} WHERE stand = ?"""
-        self.cur.execute(sql, [stand_name])
-        args = [self.db] + list(self.cur.fetchone())
+        cur.execute(sql, [stand_name])
+        args = [self.db] + list(cur.fetchone())
 
         stand = RfrsStand(*args)
         sql = f"""SELECT * FROM rfrstables WHERE ref_stand = ?"""
-        self.cur.execute(sql, [stand.ref_stand])
-        tables = self.cur.fetchall()
+        cur.execute(sql, [stand.ref_stand])
+        tables = cur.fetchall()
+        conn.close()
 
         stand.table_rows = []
         stand.table_data = []
