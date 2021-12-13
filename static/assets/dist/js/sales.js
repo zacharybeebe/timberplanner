@@ -18,12 +18,16 @@ function select_all_items(checkbox_ultimo) {
 
     if (checkbox_ultimo.checked) {
       for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = true;
+        if (checkboxes[i].id != "readonly_check") {
+            checkboxes[i].checked = true;
+        }
       }
       delete_sale.style = "visibility: visible;";
     } else {
       for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = false;
+        if (checkboxes[i].id != "readonly_check") {
+            checkboxes[i].checked = false;
+        }
       }
       delete_sale.style = "visibility: hidden;";
     }
@@ -37,22 +41,23 @@ function unhide_delete() {
     const checkboxes = document.querySelectorAll(".form-check-input");
     var boxes_on = 0
     for (i in checkboxes){
-        if (checkboxes[i].checked){
+        if (checkboxes[i].checked && checkboxes[i].id != "readonly_check"){
             boxes_on ++;
         }
     }
-
     if (boxes_on > 0) {
         delete_sale.style = "visibility: visible;";
         if (boxes_on == 2) {
             swap_sale.style = "visibility: visible;";
-            swap_on.value = 'on'
+            swap_on.value = 'on';
         } else {
             swap_sale.style = "visibility: hidden;";
-            swap_on.value = 'off'
+            swap_on.value = 'off';
         }
     } else {
         delete_sale.style = "visibility: hidden;";
+        swap_sale.style = "visibility: hidden;";
+        swap_on.value = 'off';
     }
 }
 

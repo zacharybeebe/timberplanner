@@ -181,9 +181,11 @@ function unhide_delete() {
     const checkboxes = document.querySelectorAll(".form-check-input");
     var visible = false;
     for (var i = 0; i < checkboxes.length; i++) {
-      if (checkboxes[i].checked) {
-        visible = true;
-        break;
+      if (checkboxes[i].id != "readonly_check") {
+          if (checkboxes[i].checked) {
+            visible = true;
+            break;
+          }
       }
     }
     if (visible) {

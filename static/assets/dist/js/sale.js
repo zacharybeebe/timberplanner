@@ -175,13 +175,17 @@ function select_all_items(checkbox_ultimo) {
 
     if (checkbox_ultimo.checked) {
       for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = true;
+        if (checkboxes[i].id != "readonly_check") {
+            checkboxes[i].checked = true;
+        }
       }
       delete_unit.style = "visibility: visible;";
       submit_sale_edits.style = "visibility: hidden;";
     } else {
       for (var i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = false;
+        if (checkboxes[i].id != "readonly_check") {
+            checkboxes[i].checked = false;
+        }
       }
       delete_unit.style = "visibility: hidden;";
       submit_sale_edits.style = "visibility: visible;";
@@ -194,9 +198,11 @@ function unhide_delete() {
     const checkboxes = document.querySelectorAll(".form-check-input");
     var visible = false;
     for (var i = 0; i < checkboxes.length; i++) {
-      if (checkboxes[i].checked) {
-        visible = true;
-        break;
+      if (checkboxes[i].id != "readonly_check") {
+          if (checkboxes[i].checked) {
+            visible = true;
+            break;
+          }
       }
     }
     if (visible) {

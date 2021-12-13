@@ -130,9 +130,6 @@ def sale(sale_name):
     sale_name_change_check = (sale_name, )
 
     sale = {s.sale_name: s for s in app.config['TIMBERSALES']}[sale_name]
-    print(f'sale db  = {sale.db}')
-    for u in sale.units:
-        print(f'u{u} db = {sale.units[u].db}')
     sale_info = deepcopy(sale.info)
     units_table = get_units_table_from_sale(sale)
 
@@ -525,7 +522,6 @@ def exit_and_save():
 
 
 def shutdown():
-    #app.config['ORM'].conn.close()
     print(f"\nLOCAL DATABASE CONNECTION IS CLOSED")
     if not app.config['DEBUG'] and not app.config['READONLY']:
         if MAIN_DB is not None:
@@ -552,7 +548,7 @@ if __name__ == '__main__':
         try:
             # PRODUCTION
             MAIN_DIR = Path('J:/SHARED/TimberSales/Snoqualmie/TIMBER_PLANNER/') # HARDCODED
-            MAIN_DB = join(MAIN_DIR, 'TIMBER_DB.db')################################################# CHANGE 1
+            MAIN_DB = join(MAIN_DIR, 'TIMBER_DB.db')
             BASE_DIR = get_desktop_path()
             LOCAL_DB = check_make_copy_directory_for_local_db(MAIN_DB)
             print(f"MAIN DATABASE COPIED DOWN TO LOCAL DATABASE")
