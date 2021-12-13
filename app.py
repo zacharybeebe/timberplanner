@@ -549,7 +549,7 @@ if __name__ == '__main__':
         try:
             # PRODUCTION
             MAIN_DIR = Path('J:/SHARED/TimberSales/Snoqualmie/TIMBER_PLANNER/') # HARDCODED
-            MAIN_DB = join(MAIN_DIR, 'TIMBER_DB1.db')################################################# CHANGE 1
+            MAIN_DB = join(MAIN_DIR, 'TIMBER_DB.db')################################################# CHANGE 1
             BASE_DIR = get_desktop_path()
             LOCAL_DB = check_make_copy_directory_for_local_db(MAIN_DB)
             print(f"MAIN DATABASE COPIED DOWN TO LOCAL DATABASE")
