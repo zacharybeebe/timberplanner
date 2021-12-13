@@ -74,6 +74,7 @@ class ORM(object):
             sale = cls(*args)
             sale.set_other_attrs()
             sale.set_sale_info()
+            sale.set_presales()
             master.append(sale)
         master = sorted(master, key=lambda x: x.auction_date)
         return master
@@ -163,6 +164,22 @@ class ORM(object):
             sql = f"""CREATE TABLE {table} {cols}"""
             print(sql)
             cur.execute(sql)
+        conn.commit()
+
+    @staticmethod
+    def create_table(db, cls):
+        conn = connect(db)
+        cur = conn.cursor()
+        table = f'{cls.__name__.lower()}s'
+        fk = cls.foreign_key
+        if fk:
+            add = f""" , FOREIGN KEY ({fk[0]}) REFERENCES {fk[1]} ({fk[2]})"""
+        else:
+            add = ''
+        cols = f"""({', '.join([f'{key} {cls.args[key]}' for key in cls.args])}, PRIMARY KEY ({cls.primary_key}){add});"""
+        sql = f"""CREATE TABLE {table} {cols}"""
+        print(sql)
+        cur.execute(sql)
         conn.commit()
 
 

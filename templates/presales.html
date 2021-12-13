@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ sale.sale_name }}{% endblock %}
+
+{% block header2 %}{{ sale.sale_name }}{% endblock %}
+
+{% block sale_info %}
+<script src="{{ url_for('static', filename='assets/dist/js/presales.js') }}"></script>
+{% autoescape false %}
+	{% if flash %}
+		<p style="color: rgba(84, 216, 226, .95);"><b>{{ flash }}</b></p>
+	{% endif %}
+{% endautoescape %}
+<p>
+    <input type="button" class="form-group btn btn-secondary btn-sm" value="back to {{ sale.sale_name }}" id="back_to_sale" onclick="window.location.href = '{{ url_for('sale', sale_name=sale.sale_name) }}';" />
+</p>
+
+<form action="#" method="post" id="form_item">
+    <p style="color: rgba(84, 216, 226, .95);"><b id="lrm_flash">&emsp;</b></p>
+    <p><h6>PRESALES ACTIVITIES CHECKLIST</h6></p>
+    <p>
+        <div class="form-check form-check-inline" id="div {{ key }} {{ i }}">
+            <label style="width: 200px; text-align: left; font-weight: bold;">Activities</label>
+            <label style="width: 146px; text-align: left; font-weight: bold;">Completed</label>
+            <label style="width: 146px; text-align: left; font-weight: bold;">Pending</label>
+            <label style="width: 146px; text-align: left; font-weight: bold;">Not Needed</label>
+        </div>
+    </p>
+    {% for key in sale.presales.info %}
+        {% set val = sale.presales.info[key] %}
+        <p>
+            <div class="form-check form-check-inline" id="div_{{ key|replace(' ', '') }}">
+                <label style="width: 200px; text-align: left; font-weight: bold;">{{ key }}:</label>
+                {% for i in [1, 0, -1] %}
+                    {% if val == i %}
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="checkbox" id="{{ key }} {{ i }}" name="{{ key }} {{ i }}" checked onclick="change_check('div_{{ key|replace(' ', '') }}', this.name)" />
+                          <label class="form-check-label" for="{{ key }} {{ i }}" style="width: 110px;"></label>
+                        </div>
+                    {% else %}
+                        <div class="form-check form-check-inline">
+                          <input class="form-check-input" type="checkbox" id="{{ key }} {{ i }}" name="{{ key }} {{ i }}" onclick="change_check('div_{{ key|replace(' ', '') }}', this.name)" />
+                          <label class="form-check-label" for="{{ key }} {{ i }}" style="width: 110px;"></label>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </p>
+    {% endfor %}
+    <p>
+        <input type="submit" class="form-group btn btn-info btn-sm" value="submit" />
+    </p>
+</form>
+{% endblock %}

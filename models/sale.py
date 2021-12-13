@@ -19,6 +19,7 @@ from utils.config_utils import (
 from models.orm import ORM
 from models.unit import Unit
 from models.silviculture import Silviculture
+from models.presale import Presale
 
 
 class Sale(ORM):
@@ -52,7 +53,8 @@ class Sale(ORM):
         'value_ac',
         'trust_summary',
         'info',
-        'silv_report'
+        'silv_report',
+        'presales'
     )
 
     primary_key = 'ref'
@@ -87,6 +89,8 @@ class Sale(ORM):
         self.trust_summary = None
         self.info = None
         self.silv_report = None
+
+        self.presales = None
 
     def set_other_attrs(self):
         self.set_silviculture()
@@ -139,6 +143,12 @@ class Sale(ORM):
         sort = sorted(temp_units)
         self.units = {key: temp_units[key] for key in sort}
         self.trust_summary = self._get_trust_summary()
+
+    def set_presales(self):
+        sql = f"""SELECT * FROM presales WHERE sale_ref = ?"""
+        self.cur.execute(sql, [self.ref])
+        args = [self.db] + [i for i in self.cur.fetchone()]
+        self.presales = Presale(*args)
 
     def _get_trust_summary(self):
         master = {}

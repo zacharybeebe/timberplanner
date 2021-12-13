@@ -21,8 +21,9 @@
 	{% endif %}
 {% endautoescape %}
 
-<form action="#" method="post" id="form_item">
+<form action="#" method="post" id="form_item" enctype="multipart/form-data">
 	<p>
+		<input type="button" class="form-group btn btn-dark btn-sm" value="presales checklist" id="presales_checklist" name="presales_checklist" onclick="window.location.href = '{{ url_for('presales', sale_name=sale.sale_name) }}';" />
 		<input type="button" class="form-group btn btn-dark btn-sm" value="silviculture scheduler" id="silviculture_scheduler" name="silviculture_scheduler" onclick="window.location.href = '{{ url_for('silviculture', sale_name=sale.sale_name) }}';" />
 		<input type="button" class="form-group btn btn-dark btn-sm" value="lrm volume calculator" id="lrm_volume_calculator" name="lrm_volume_calculator" onclick="window.location.href = '{{ url_for('lrm_vol', sale_name=sale.sale_name) }}';" />
 	</p>
@@ -101,9 +102,11 @@
 	</div>
 
 	<div class="form-group">
-		<p>
-			<input type="button" class="form-group btn btn-info btn-sm" value="add unit" id="add_unit" name="add_unit" onclick="add_unit_row()" />
+		<p id="button_zone">
+			<input type="button" class="form-group btn btn-dark btn-sm" value="add unit" id="add_unit" name="add_unit" onclick="add_unit_row()" />
+			<input type="button" class="form-group btn btn-info btn-sm" value="update units from shapefile" id="add_unit_shp" name="add_unit_shp" onclick="document.getElementById('shp_file').click();" />
 			<input type="button" class="form-group btn btn-danger btn-sm" style="visibility: hidden;" value="delete unit" id="delete_unit" name="delete_unit" onclick="delete_submit()" />
+			<input type="file" accept=".shp, .dbf" multiple="" id="shp_file" name="shp_file" style="display: none;" onchange="submit_check()" />
 			<input type="text" style="visibility: hidden;" value="off" id="delete_on" name="delete_on" />
 		</p>
 

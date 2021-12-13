@@ -29,22 +29,21 @@ function submit_check() {
 
 
     if (num_f < 2) {
-        flasher.innerHTML = "    Please select both SHP and DBF files for the shapefile";
+        flasher.innerHTML = "Please select both SHP and DBF files for the shapefile";
         button_zone.appendChild(flasher);
     } else if (num_f > 2) {
-        flasher.innerHTML = "    Cannot select more than one shapefile";
+        flasher.innerHTML = "Cannot select more than one shapefile";
         button_zone.appendChild(flasher);
     } else {
-        var file_types = ''
+        var file_types = '';
         for (var i = 0; i < file_input.files.length; i++){
-            file_types += file_input.files[i].name.slice(-4)
+            file_types += file_input.files[i].name.slice(-4);
         }
-        console.log(file_types);
         if (file_types == FILE_TYPES1 || file_types == FILE_TYPES2){
             var form = document.getElementById("form_item");
             form.submit();
         } else {
-            flasher.innerHTML = "    Please select both SHP and DBF files for the shapefile";
+            flasher.innerHTML = "Please select both SHP and DBF files for the shapefile";
             button_zone.appendChild(flasher);
         }
     }

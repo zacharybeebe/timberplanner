@@ -44,6 +44,15 @@ def today():
     return datetime.today()
 
 
+def change_readonly(app, readonly):
+    if readonly == 'true':
+        app.config['READONLY'] = True
+        app.config['CONSTANTS']['READONLY'] = True
+    else:
+        app.config['READONLY'] = False
+        app.config['CONSTANTS']['READONLY'] = False
+
+
 # @timer
 def filter_sales(sales, fy, filter_keys):
     if fy != 'all':
@@ -683,6 +692,19 @@ def is_err_calculate_lrm_vol(sale, target, con_pct):
 
     units.append(['TOTALS', sum([i[1] for i in units]), sum([i[2] for i in units])])
     return False, target, units, None
+
+
+def update_presales(presales, request_form):
+    args = [key for key in presales.args if key not in ['ref', 'sale_ref']]
+    form_transform = {'_'.join([i.lower() for i in key.split(' ')[:-1]]): int(key.split()[-1]) for key in request_form}
+    for key in args:
+        if key not in form_transform:
+            presales[key] = -1
+        else:
+            presales[key] = form_transform[key]
+    presales.update_self()
+    presales.set_info()
+
 
 
 

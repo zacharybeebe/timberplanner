@@ -5,6 +5,47 @@ function submit() {
     form.submit();
 }
 
+function submit_check() {
+    var file_input = document.getElementById("shp_file");
+    var num_f = file_input.files.length;
+
+    var button_zone = document.getElementById("button_zone");
+    var bz_children = button_zone.children;
+
+    for (elem in bz_children) {
+        if (bz_children[elem].tagName == "B") {
+            button_zone.removeChild(bz_children[elem]);
+        }
+    }
+
+    var flasher = document.createElement("b");
+    flasher.style = "color: rgba(84, 216, 226, .95);";
+
+    const FILE_TYPES1 = '.shp.dbf';
+    const FILE_TYPES2 = '.dbf.shp';
+
+
+    if (num_f < 2) {
+        flasher.innerHTML = "Please select both SHP and DBF files for the shapefile";
+        button_zone.appendChild(flasher);
+    } else if (num_f > 2) {
+        flasher.innerHTML = "Cannot select more than one shapefile";
+        button_zone.appendChild(flasher);
+    } else {
+        var file_types = '';
+        for (var i = 0; i < file_input.files.length; i++){
+            file_types += file_input.files[i].name.slice(-4);
+        }
+        if (file_types == FILE_TYPES1 || file_types == FILE_TYPES2){
+            var form = document.getElementById("form_item");
+            form.submit();
+        } else {
+            flasher.innerHTML = "Please select both SHP and DBF files for the shapefile";
+            button_zone.appendChild(flasher);
+        }
+    }
+}
+
 function delete_submit() {
     var tbody = document.getElementById("sale_table_body");
     var tbody_rows = tbody.rows;
