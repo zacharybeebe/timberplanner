@@ -138,7 +138,7 @@ def sale(sale_name):
             change_readonly(app, request.form['readonly'])
             return redirect(request.url)
         if request.form['delete_on'] == 'on':
-            units_table, flash_main = delete_units(app.config['ORM'], sale, request.form)
+            flash_main = delete_units(app.config['ORM'], sale, request.form)
         else:
             if request.files['shp_file'].filename != '':
                 files = request.files.getlist('shp_file')
@@ -152,7 +152,6 @@ def sale(sale_name):
                     else:
                         unit = Unit(db=app.config['DB'], sale_ref=sale.ref, **unit_attrs[u])
                         unit.insert_self()
-                units_table = get_units_table_from_sale(sale)
                 flash_main += 'Units have been updated<br>'
             else:
                 no_unit_errors, units_table, unit_attrs, flash_unit = check_unit_edits(request.form)
@@ -173,6 +172,8 @@ def sale(sale_name):
                 sale[attr] = sale_info[attr]['val']
             flash_main += 'Sale has been updated<br>'
             sale.update_after_edit()
+
+        units_table = get_units_table_from_sale(sale)
         app.config['TIMBERSALES'] = app.config['ORM'].select_all_sales()
         app.config['CONSTANTS']['FISCAL_YEARS'] = {sale.fy for sale in app.config['TIMBERSALES']}
 

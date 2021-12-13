@@ -235,7 +235,7 @@ def delete_units(orm, sale, request_form):
         flash = f"""Units {', '.join(deleted_units)} have been deleted <br>"""
     else:
         flash = f"""Unit {deleted_units[0]} has been deleted <br>"""
-    return get_units_table_from_sale(sale), flash
+    return flash
 
 
 def swap(orm, sales, sale1_name, sale2_name):
