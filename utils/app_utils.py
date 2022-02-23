@@ -518,7 +518,7 @@ def get_units_from_shp(shp_path, dbf_path):
     shp = Reader(shp=shp_path, dbf=dbf_path)
 
     formatted_shp = False
-    if [i[0] for i in shp.fields[1:]] == ['TIMBER_TRU', 'UNIT_NM', 'ACRES1', 'MBF', 'MBF_AC']:
+    if [i[0] for i in shp.fields[1:]] == ['TIMBER_TRU', 'HARVEST', 'UNIT_NM', 'ACRES1', 'MBF', 'MBF_AC']:
         formatted_shp = True
 
     units = {}
@@ -535,15 +535,16 @@ def get_units_from_shp(shp_path, dbf_path):
             units[u]['trusts'][1]['mbf'] = 1.0
     else:
         for i in shp.records():
-            u = int(i[1][1:])
+            harv = i[1]
+            u = int(i[2][1:])
             if u not in units:
-                units[u] = {'unit_name': i[1],
-                            'harvest': 'VRH',
+                units[u] = {'unit_name': i[2],
+                            'harvest': harv,
                             'trusts': {j: {'acres': 0.0,
                                            'mbf': 0.0} for j in [1, 3, 6, 7, 8, 9, 10, 11, 12, 77]}}
             trust = int(i[0])
-            units[u]['trusts'][trust]['acres'] += float(i[2])
-            units[u]['trusts'][trust]['mbf'] += float(i[3])
+            units[u]['trusts'][trust]['acres'] += float(i[3])
+            units[u]['trusts'][trust]['mbf'] += float(i[4])
 
     sort = sorted(units)
     sorted_units = {u_num: units[u_num] for u_num in sort}

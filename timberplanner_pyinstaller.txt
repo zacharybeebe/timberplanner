@@ -1,6 +1,6 @@
 
 
-py -3.7 -m PyInstaller -F -n "TimberPlanner v1.2" -p imports -p models -p utils --hidden-import="imports" --add-data "templates;templates" --add-data "static;static" -i "icon.ico" app.py
+py -3.7 -m PyInstaller -F -n "TimberPlanner v1.3" -p imports -p models -p utils --hidden-import="imports" --add-data "templates;templates" --add-data "static;static" -i "icon.ico" app.py
 
 
 py -3.7 -m PyInstaller -F -n "RESTORE DB FROM BACKUP" restore_database_from_backup.py

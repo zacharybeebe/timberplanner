@@ -1,4 +1,4 @@
-print('TimberPlanner v1.2 STARTING...\n')
+print('TimberPlanner v1.3 STARTING...\n')
 from imports._imports_ import (
     register,
     deepcopy,
